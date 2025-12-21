@@ -1,4 +1,5 @@
 {%- if cookiecutter.use_postgresql or cookiecutter.use_sqlite -%}
+# ruff: noqa: I001 - Imports structured for Jinja2 template conditionals
 """
 Seed database with sample data.
 

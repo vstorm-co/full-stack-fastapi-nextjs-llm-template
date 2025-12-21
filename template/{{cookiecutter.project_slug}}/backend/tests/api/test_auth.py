@@ -1,4 +1,5 @@
 {%- if cookiecutter.use_jwt %}
+# ruff: noqa: I001 - Imports structured for Jinja2 template conditionals
 """Tests for authentication routes."""
 
 from datetime import UTC, datetime

@@ -1,13 +1,14 @@
 """Application configuration using Pydantic BaseSettings."""
+# ruff: noqa: I001 - Imports structured for Jinja2 template conditionals
 
 from pathlib import Path
 from typing import Literal
 
-{%- if cookiecutter.use_database %}
+{% if cookiecutter.use_database -%}
 from pydantic import computed_field, field_validator
-{%- else %}
+{% else -%}
 from pydantic import field_validator
-{%- endif %}
+{% endif -%}
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 

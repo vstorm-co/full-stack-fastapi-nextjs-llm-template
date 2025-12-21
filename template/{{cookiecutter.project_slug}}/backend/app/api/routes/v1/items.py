@@ -1,4 +1,5 @@
 {%- if cookiecutter.include_example_crud and cookiecutter.use_database %}
+# ruff: noqa: I001 - Imports structured for Jinja2 template conditionals
 """Item CRUD routes - example API endpoints.
 
 This module demonstrates a complete CRUD API for the Item entity.

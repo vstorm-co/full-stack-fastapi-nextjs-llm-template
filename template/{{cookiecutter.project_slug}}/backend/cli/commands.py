@@ -1,7 +1,5 @@
 """Project management CLI."""
-{%- if cookiecutter.use_postgresql or cookiecutter.use_sqlite or cookiecutter.use_jwt or cookiecutter.use_celery or cookiecutter.use_taskiq %}
-# ruff: noqa: I001, E402 - Imports structured for Jinja2 template conditionals
-{%- endif %}
+# ruff: noqa: E402 - Import at bottom to avoid circular imports
 
 import click
 from tabulate import tabulate

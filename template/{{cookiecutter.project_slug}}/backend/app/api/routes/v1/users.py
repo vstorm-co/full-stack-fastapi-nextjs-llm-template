@@ -1,4 +1,5 @@
 {%- if cookiecutter.use_jwt %}
+# ruff: noqa: I001 - Imports structured for Jinja2 template conditionals
 """User management routes."""
 
 from typing import Annotated
