@@ -6,9 +6,9 @@ from pathlib import Path
 from typing import Literal
 
 {% if cookiecutter.use_database -%}
-from pydantic import computed_field, field_validator
+from pydantic import computed_field, field_validator{% if cookiecutter.use_jwt or cookiecutter.use_api_key or cookiecutter.enable_cors %}, ValidationInfo{% endif %}
 {% else -%}
-from pydantic import field_validator
+from pydantic import field_validator{% if cookiecutter.use_jwt or cookiecutter.use_api_key or cookiecutter.enable_cors %}, ValidationInfo{% endif %}
 {% endif -%}
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -119,7 +119,7 @@ class Settings(BaseSettings):
 
     @field_validator("SECRET_KEY")
     @classmethod
-    def validate_secret_key(cls, v: str, info) -> str:
+    def validate_secret_key(cls, v: str, info: ValidationInfo) -> str:
         """Validate SECRET_KEY is secure in production."""
         if len(v) < 32:
             raise ValueError("SECRET_KEY must be at least 32 characters long")
@@ -149,7 +149,7 @@ class Settings(BaseSettings):
 
     @field_validator("API_KEY")
     @classmethod
-    def validate_api_key(cls, v: str, info) -> str:
+    def validate_api_key(cls, v: str, info: ValidationInfo) -> str:
         """Validate API_KEY is set in production."""
         env = info.data.get("ENVIRONMENT", "local") if info.data else "local"
         if v == "change-me-in-production" and env == "production":
@@ -241,7 +241,7 @@ class Settings(BaseSettings):
 
     @field_validator("CORS_ORIGINS")
     @classmethod
-    def validate_cors_origins(cls, v: list[str], info) -> list[str]:
+    def validate_cors_origins(cls, v: list[str], info: ValidationInfo) -> list[str]:
         """Warn if CORS_ORIGINS is too permissive in production."""
         env = info.data.get("ENVIRONMENT", "local") if info.data else "local"
         if "*" in v and env == "production":
