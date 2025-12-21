@@ -11,6 +11,167 @@ use_frontend = "{{ cookiecutter.use_frontend }}" == "True"
 generate_env = "{{ cookiecutter.generate_env }}" == "True"
 enable_i18n = "{{ cookiecutter.enable_i18n }}" == "True"
 
+# Feature flags
+use_database = "{{ cookiecutter.use_database }}" == "True"
+use_postgresql = "{{ cookiecutter.use_postgresql }}" == "True"
+use_sqlite = "{{ cookiecutter.use_sqlite }}" == "True"
+use_mongodb = "{{ cookiecutter.use_mongodb }}" == "True"
+include_example_crud = "{{ cookiecutter.include_example_crud }}" == "True"
+enable_ai_agent = "{{ cookiecutter.enable_ai_agent }}" == "True"
+use_pydantic_ai = "{{ cookiecutter.use_pydantic_ai }}" == "True"
+use_langchain = "{{ cookiecutter.use_langchain }}" == "True"
+enable_admin_panel = "{{ cookiecutter.enable_admin_panel }}" == "True"
+enable_websockets = "{{ cookiecutter.enable_websockets }}" == "True"
+enable_redis = "{{ cookiecutter.enable_redis }}" == "True"
+enable_caching = "{{ cookiecutter.enable_caching }}" == "True"
+enable_rate_limiting = "{{ cookiecutter.enable_rate_limiting }}" == "True"
+enable_session_management = "{{ cookiecutter.enable_session_management }}" == "True"
+enable_conversation_persistence = "{{ cookiecutter.enable_conversation_persistence }}" == "True"
+enable_webhooks = "{{ cookiecutter.enable_webhooks }}" == "True"
+enable_oauth = "{{ cookiecutter.enable_oauth }}" == "True"
+use_jwt = "{{ cookiecutter.use_jwt }}" == "True"
+use_celery = "{{ cookiecutter.use_celery }}" == "True"
+use_taskiq = "{{ cookiecutter.use_taskiq }}" == "True"
+use_arq = "{{ cookiecutter.use_arq }}" == "True"
+
+
+def remove_file(path: str) -> None:
+    """Remove a file if it exists."""
+    if os.path.exists(path):
+        os.remove(path)
+        print(f"  Removed: {os.path.relpath(path)}")
+
+
+def remove_dir(path: str) -> None:
+    """Remove a directory if it exists."""
+    if os.path.exists(path):
+        shutil.rmtree(path)
+        print(f"  Removed: {os.path.relpath(path)}/")
+
+
+# Base directories
+backend_app = os.path.join(os.getcwd(), "backend", "app")
+
+# ============================================================================
+# Cleanup stub files based on disabled features
+# ============================================================================
+print("Cleaning up unused files...")
+
+# --- AI Agent files ---
+if not enable_ai_agent:
+    # Remove entire agents directory when AI is disabled
+    remove_dir(os.path.join(backend_app, "agents"))
+    remove_file(os.path.join(backend_app, "api", "routes", "v1", "agent.py"))
+else:
+    # Remove framework-specific files based on selection
+    if not use_pydantic_ai:
+        remove_file(os.path.join(backend_app, "agents", "assistant.py"))
+    if not use_langchain:
+        remove_file(os.path.join(backend_app, "agents", "langchain_assistant.py"))
+
+# --- Example CRUD files ---
+if not include_example_crud or not use_database:
+    remove_file(os.path.join(backend_app, "api", "routes", "v1", "items.py"))
+    remove_file(os.path.join(backend_app, "db", "models", "item.py"))
+    remove_file(os.path.join(backend_app, "repositories", "item.py"))
+    remove_file(os.path.join(backend_app, "services", "item.py"))
+    remove_file(os.path.join(backend_app, "schemas", "item.py"))
+
+# --- Conversation persistence files ---
+if not enable_conversation_persistence:
+    remove_file(os.path.join(backend_app, "api", "routes", "v1", "conversations.py"))
+    remove_file(os.path.join(backend_app, "db", "models", "conversation.py"))
+    remove_file(os.path.join(backend_app, "repositories", "conversation.py"))
+    remove_file(os.path.join(backend_app, "services", "conversation.py"))
+    remove_file(os.path.join(backend_app, "schemas", "conversation.py"))
+
+# --- Webhook files ---
+if not enable_webhooks or not use_database:
+    remove_file(os.path.join(backend_app, "api", "routes", "v1", "webhooks.py"))
+    remove_file(os.path.join(backend_app, "db", "models", "webhook.py"))
+    remove_file(os.path.join(backend_app, "repositories", "webhook.py"))
+    remove_file(os.path.join(backend_app, "services", "webhook.py"))
+    remove_file(os.path.join(backend_app, "schemas", "webhook.py"))
+
+# --- Session management files ---
+if not enable_session_management or not use_jwt:
+    remove_file(os.path.join(backend_app, "api", "routes", "v1", "sessions.py"))
+    remove_file(os.path.join(backend_app, "db", "models", "session.py"))
+    remove_file(os.path.join(backend_app, "repositories", "session.py"))
+    remove_file(os.path.join(backend_app, "services", "session.py"))
+    remove_file(os.path.join(backend_app, "schemas", "session.py"))
+
+# --- WebSocket files ---
+if not enable_websockets:
+    remove_file(os.path.join(backend_app, "api", "routes", "v1", "ws.py"))
+
+# --- Admin panel ---
+if not enable_admin_panel or (not use_postgresql and not use_sqlite):
+    remove_file(os.path.join(backend_app, "admin.py"))
+
+# --- Redis/Cache files ---
+if not enable_redis:
+    remove_file(os.path.join(backend_app, "clients", "redis.py"))
+
+if not enable_caching:
+    remove_file(os.path.join(backend_app, "core", "cache.py"))
+
+# --- Rate limiting ---
+if not enable_rate_limiting:
+    remove_file(os.path.join(backend_app, "core", "rate_limit.py"))
+
+# --- OAuth ---
+if not enable_oauth:
+    remove_file(os.path.join(backend_app, "api", "routes", "v1", "oauth.py"))
+    remove_file(os.path.join(backend_app, "core", "oauth.py"))
+
+# --- Worker/Background tasks ---
+use_any_background_tasks = use_celery or use_taskiq or use_arq
+if not use_any_background_tasks:
+    remove_dir(os.path.join(backend_app, "worker"))
+else:
+    # Remove specific worker files based on selection
+    worker_dir = os.path.join(backend_app, "worker")
+    if not use_celery:
+        remove_file(os.path.join(worker_dir, "celery_app.py"))
+        remove_file(os.path.join(worker_dir, "tasks", "examples.py"))
+        remove_file(os.path.join(worker_dir, "tasks", "schedules.py"))
+    if not use_taskiq:
+        remove_file(os.path.join(worker_dir, "taskiq_app.py"))
+        remove_file(os.path.join(worker_dir, "tasks", "taskiq_examples.py"))
+    if not use_arq:
+        remove_file(os.path.join(worker_dir, "arq_app.py"))
+
+
+# --- Cleanup empty directories ---
+def remove_empty_dirs(path: str) -> None:
+    """Recursively remove empty directories."""
+    if not os.path.isdir(path):
+        return
+    for item in os.listdir(path):
+        item_path = os.path.join(path, item)
+        if os.path.isdir(item_path):
+            remove_empty_dirs(item_path)
+    # Check if directory is now empty (except __init__.py)
+    remaining = os.listdir(path)
+    if not remaining:
+        os.rmdir(path)
+        print(f"  Removed empty: {os.path.relpath(path)}/")
+    elif remaining == ["__init__.py"]:
+        # Directory only has __init__.py - remove it
+        os.remove(os.path.join(path, "__init__.py"))
+        os.rmdir(path)
+        print(f"  Removed empty: {os.path.relpath(path)}/")
+
+
+# Clean up empty directories in key locations
+for subdir in ["clients", "agents", "worker", "worker/tasks"]:
+    dir_path = os.path.join(backend_app, subdir)
+    if os.path.exists(dir_path):
+        remove_empty_dirs(dir_path)
+
+print("File cleanup complete.")
+
 # Remove frontend folder if not using frontend
 if not use_frontend:
     frontend_dir = os.path.join(os.getcwd(), "frontend")
@@ -45,16 +206,16 @@ if use_frontend and not enable_i18n:
         # Update root layout to include providers
         root_layout = os.path.join(app_dir, "layout.tsx")
         if os.path.exists(root_layout):
-            with open(root_layout, "r") as f:
+            with open(root_layout) as f:
                 content = f.read()
             # Add Providers import and wrap children
             content = content.replace(
                 'import "./globals.css";',
-                'import "./globals.css";\nimport { Providers } from "./providers";'
+                'import "./globals.css";\nimport { Providers } from "./providers";',
             )
             content = content.replace(
                 "<body className={inter.className}>{children}</body>",
-                "<body className={inter.className}>\n        <Providers>{children}</Providers>\n      </body>"
+                "<body className={inter.className}>\n        <Providers>{children}</Providers>\n      </body>",
             )
             with open(root_layout, "w") as f:
                 f.write(content)
@@ -74,7 +235,9 @@ if use_frontend and not enable_i18n:
         shutil.rmtree(messages_dir)
 
     # Remove language-switcher component
-    lang_switcher = os.path.join(os.getcwd(), "frontend", "src", "components", "language-switcher.tsx")
+    lang_switcher = os.path.join(
+        os.getcwd(), "frontend", "src", "components", "language-switcher.tsx"
+    )
     if os.path.exists(lang_switcher):
         os.remove(lang_switcher)
 

@@ -110,12 +110,12 @@ def post_generation_tasks(project_path: Path, config: ProjectConfig) -> None:
         console.print()
         if config.generate_env:
             console.print(f"[bold]{step}. Environment:[/]")
-            console.print("  .env files are pre-configured for development")
+            console.print("  backend/.env and frontend/.env.local are pre-configured")
             console.print("  # Review and update settings as needed")
         else:
             console.print(f"[bold]{step}. Configure environment:[/]")
-            console.print("  cp backend/.env.example backend/.env")
-            console.print("  cp frontend/.env.example frontend/.env.local")
+            console.print("  cd backend && cp .env.example .env")
+            console.print("  cd frontend && cp .env.example .env.local")
             console.print("  # Edit with your settings (database, secrets, etc.)")
         step += 1
         console.print()
@@ -143,12 +143,12 @@ def post_generation_tasks(project_path: Path, config: ProjectConfig) -> None:
         console.print()
         if config.generate_env:
             console.print(f"[bold]{step}. Environment:[/]")
-            console.print("  .env file is pre-configured for development")
+            console.print("  backend/.env is pre-configured for development")
             console.print("  # Review and update settings as needed")
         else:
             console.print(f"[bold]{step}. Configure environment:[/]")
             console.print("  cd backend && cp .env.example .env")
-            console.print("  # Edit .env with your settings")
+            console.print("  # Edit backend/.env with your settings")
         step += 1
         console.print()
         console.print(f"[bold]{step}. Install dependencies:[/]")
@@ -168,7 +168,7 @@ def post_generation_tasks(project_path: Path, config: ProjectConfig) -> None:
     console.print()
 
     if config.enable_logfire:
-        console.print("[dim]To enable Logfire, set LOGFIRE_TOKEN in your .env file[/]")
+        console.print("[dim]To enable Logfire, set LOGFIRE_TOKEN in backend/.env[/]")
         console.print("[dim]Get your token at: https://logfire.pydantic.dev[/]")
         console.print()
 

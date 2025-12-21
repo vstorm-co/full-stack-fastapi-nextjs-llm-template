@@ -235,8 +235,8 @@ class TestProjectContents:
         assert "content_test" in content
 
     def test_env_example_exists(self, project_with_all_options: Path) -> None:
-        """Test .env.example file exists."""
-        env_example = project_with_all_options / ".env.example"
+        """Test .env.example file exists in backend directory."""
+        env_example = project_with_all_options / "backend" / ".env.example"
         assert env_example.is_file()
         content = env_example.read_text()
         assert "POSTGRES" in content  # PostgreSQL config should be present

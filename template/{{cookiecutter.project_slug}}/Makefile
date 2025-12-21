@@ -13,14 +13,21 @@ install:
 {%- endif %}
 	@echo ""
 	@echo "✅ Installation complete!"
+	@echo ""
 	@echo "Next steps:"
-	@echo "  1. cp .env.example .env"
-	@echo "  2. Edit .env with your settings"
-{%- if cookiecutter.use_postgresql %}
-	@echo "  3. make docker-db"
-	@echo "  4. make db-migrate && make db-upgrade"
+{%- if not cookiecutter.generate_env %}
+	@echo "  • cd backend && cp .env.example .env"
+	@echo "  • Edit backend/.env with your settings"
 {%- endif %}
-	@echo "  5. make run"
+{%- if cookiecutter.use_postgresql %}
+	@echo "  • make docker-db        # Start PostgreSQL"
+	@echo "  • make db-upgrade       # Apply migrations"
+{%- endif %}
+	@echo "  • make run              # Start development server"
+{%- if cookiecutter.generate_env %}
+	@echo ""
+	@echo "Note: backend/.env is pre-configured for development"
+{%- endif %}
 
 # === Code Quality ===
 format:

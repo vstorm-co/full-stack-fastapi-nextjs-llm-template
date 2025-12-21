@@ -365,3 +365,102 @@ class TestCookiecutterContext:
         assert context["logfire_redis"] is True
         assert context["logfire_celery"] is False
         assert context["logfire_httpx"] is True
+
+
+class TestOptionCombinationValidation:
+    """Tests for invalid option combination validation."""
+
+    def test_admin_panel_requires_database(self) -> None:
+        """Test that admin panel cannot be enabled without a database."""
+        with pytest.raises(ValidationError, match="Admin panel requires a database"):
+            ProjectConfig(
+                project_name="test",
+                database=DatabaseType.NONE,
+                enable_admin_panel=True,
+            )
+
+    def test_admin_panel_not_supported_with_mongodb(self) -> None:
+        """Test that admin panel (SQLAdmin) does not support MongoDB."""
+        with pytest.raises(
+            ValidationError, match="Admin panel \\(SQLAdmin\\) requires PostgreSQL or SQLite"
+        ):
+            ProjectConfig(
+                project_name="test",
+                database=DatabaseType.MONGODB,
+                enable_admin_panel=True,
+            )
+
+    def test_caching_requires_redis(self) -> None:
+        """Test that caching requires Redis to be enabled."""
+        with pytest.raises(ValidationError, match="Caching requires Redis to be enabled"):
+            ProjectConfig(
+                project_name="test",
+                enable_caching=True,
+                enable_redis=False,
+            )
+
+    def test_session_management_requires_database(self) -> None:
+        """Test that session management requires a database."""
+        with pytest.raises(ValidationError, match="Session management requires a database"):
+            ProjectConfig(
+                project_name="test",
+                database=DatabaseType.NONE,
+                enable_session_management=True,
+            )
+
+    def test_conversation_persistence_requires_database(self) -> None:
+        """Test that conversation persistence requires a database."""
+        with pytest.raises(ValidationError, match="Conversation persistence requires a database"):
+            ProjectConfig(
+                project_name="test",
+                database=DatabaseType.NONE,
+                enable_conversation_persistence=True,
+            )
+
+    def test_admin_panel_with_postgresql_is_valid(self) -> None:
+        """Test that admin panel with PostgreSQL is valid."""
+        config = ProjectConfig(
+            project_name="test",
+            database=DatabaseType.POSTGRESQL,
+            enable_admin_panel=True,
+        )
+        assert config.enable_admin_panel is True
+        assert config.database == DatabaseType.POSTGRESQL
+
+    def test_admin_panel_with_sqlite_is_valid(self) -> None:
+        """Test that admin panel with SQLite is valid."""
+        config = ProjectConfig(
+            project_name="test",
+            database=DatabaseType.SQLITE,
+            enable_admin_panel=True,
+        )
+        assert config.enable_admin_panel is True
+        assert config.database == DatabaseType.SQLITE
+
+    def test_caching_with_redis_is_valid(self) -> None:
+        """Test that caching with Redis enabled is valid."""
+        config = ProjectConfig(
+            project_name="test",
+            enable_caching=True,
+            enable_redis=True,
+        )
+        assert config.enable_caching is True
+        assert config.enable_redis is True
+
+    def test_session_management_with_database_is_valid(self) -> None:
+        """Test that session management with a database is valid."""
+        config = ProjectConfig(
+            project_name="test",
+            database=DatabaseType.POSTGRESQL,
+            enable_session_management=True,
+        )
+        assert config.enable_session_management is True
+
+    def test_conversation_persistence_with_database_is_valid(self) -> None:
+        """Test that conversation persistence with a database is valid."""
+        config = ProjectConfig(
+            project_name="test",
+            database=DatabaseType.POSTGRESQL,
+            enable_conversation_persistence=True,
+        )
+        assert config.enable_conversation_persistence is True

@@ -3,7 +3,7 @@
 from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel, Field, computed_field
+from pydantic import BaseModel, Field, computed_field, model_validator
 
 
 class DatabaseType(str, Enum):
@@ -169,6 +169,29 @@ class ProjectConfig(BaseModel):
     def project_slug(self) -> str:
         """Return project slug (underscores instead of hyphens)."""
         return self.project_name.replace("-", "_")
+
+    @model_validator(mode="after")
+    def validate_option_combinations(self) -> "ProjectConfig":
+        """Validate that option combinations are valid.
+
+        Raises ValueError for invalid combinations:
+        - Admin panel requires a database (PostgreSQL or SQLite)
+        - Admin panel (SQLAdmin) does not support MongoDB
+        - Caching requires Redis to be enabled
+        - Session management requires a database
+        - Conversation persistence requires a database
+        """
+        if self.enable_admin_panel and self.database == DatabaseType.NONE:
+            raise ValueError("Admin panel requires a database")
+        if self.enable_admin_panel and self.database == DatabaseType.MONGODB:
+            raise ValueError("Admin panel (SQLAdmin) requires PostgreSQL or SQLite")
+        if self.enable_caching and not self.enable_redis:
+            raise ValueError("Caching requires Redis to be enabled")
+        if self.enable_session_management and self.database == DatabaseType.NONE:
+            raise ValueError("Session management requires a database")
+        if self.enable_conversation_persistence and self.database == DatabaseType.NONE:
+            raise ValueError("Conversation persistence requires a database")
+        return self
 
     def to_cookiecutter_context(self) -> dict[str, Any]:
         """Convert config to cookiecutter context."""
