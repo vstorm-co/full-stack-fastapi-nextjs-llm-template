@@ -11,6 +11,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # ============================================
+  # Stage 1: Core CI (lint, type-check, test, security)
+  # ============================================
   lint:
     name: Lint
     runs-on: ubuntu-latest
@@ -116,3 +119,233 @@ jobs:
 
       - name: Run pip-audit
         run: uv run pip-audit --progress-spinner=off
+
+  # ============================================
+  # Stage 2: Template Backend Tests
+  # (runs after Stage 1 passes)
+  # ============================================
+  generate-minimal:
+    name: Template - Minimal
+    needs: [lint, type-check, test, security]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install generator
+        run: uv sync
+
+      - name: Generate minimal project
+        run: |
+          mkdir -p /tmp/projects
+          uv run fastapi-gen create test_minimal --minimal -o /tmp/projects
+
+      - name: Install generated project
+        working-directory: /tmp/projects/test_minimal/backend
+        run: uv sync --extra dev
+
+      - name: Run linting
+        working-directory: /tmp/projects/test_minimal/backend
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+
+      - name: Run tests
+        working-directory: /tmp/projects/test_minimal/backend
+        run: uv run pytest
+
+  generate-postgresql:
+    name: Template - PostgreSQL
+    needs: [lint, type-check, test, security]
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install generator
+        run: uv sync
+
+      - name: Generate PostgreSQL project
+        run: |
+          mkdir -p /tmp/projects
+          uv run fastapi-gen create test_pg --database postgresql --auth jwt -o /tmp/projects
+
+      - name: Install generated project
+        working-directory: /tmp/projects/test_pg/backend
+        run: uv sync --extra dev
+
+      - name: Run linting
+        working-directory: /tmp/projects/test_pg/backend
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+
+      - name: Run tests
+        working-directory: /tmp/projects/test_pg/backend
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        run: uv run pytest
+
+  generate-full:
+    name: Template - Full
+    needs: [lint, type-check, test, security]
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install generator
+        run: uv sync
+
+      - name: Generate full-featured project
+        run: |
+          mkdir -p /tmp/projects
+          uv run fastapi-gen create test_full \
+            --database postgresql \
+            --auth jwt \
+            -o /tmp/projects
+
+      - name: Install generated project
+        working-directory: /tmp/projects/test_full/backend
+        run: uv sync --extra dev
+
+      - name: Run linting
+        working-directory: /tmp/projects/test_full/backend
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+
+      - name: Run tests
+        working-directory: /tmp/projects/test_full/backend
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+        run: uv run pytest
+
+  # ============================================
+  # Stage 3: Template Frontend Test
+  # (runs after Stage 2 passes)
+  # ============================================
+  generate-frontend:
+    name: Template - Frontend
+    needs: [generate-minimal, generate-postgresql, generate-full]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install generator
+        run: uv sync
+
+      - name: Generate project with frontend
+        run: |
+          mkdir -p /tmp/projects
+          uv run fastapi-gen create test_frontend \
+            --frontend nextjs \
+            --auth jwt \
+            -o /tmp/projects
+
+      - name: Install frontend dependencies
+        working-directory: /tmp/projects/test_frontend/frontend
+        run: bun install
+
+      - name: Run formatting check
+        working-directory: /tmp/projects/test_frontend/frontend
+        run: bun run format:check
+
+      - name: Run type check
+        working-directory: /tmp/projects/test_frontend/frontend
+        run: bun run type-check
+
+      - name: Run unit tests
+        working-directory: /tmp/projects/test_frontend/frontend
+        run: bun run test:run
