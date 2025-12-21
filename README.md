@@ -204,6 +204,11 @@ cd backend
 uv sync
 cp .env.example .env
 alembic upgrade head
+
+# Create admin user
+uv run my_ai_app user create --email admin@example.com --password secret123 --superuser
+
+# Start server
 uv run uvicorn app.main:app --reload
 
 # Frontend (new terminal)
@@ -212,9 +217,12 @@ bun install
 bun dev
 ```
 
+> **Note:** The admin user is required to access the SQLAdmin panel at `/admin`. Use the `--superuser` flag to grant full admin privileges.
+
 **Access:**
 - API: http://localhost:8000
 - Docs: http://localhost:8000/docs
+- Admin Panel: http://localhost:8000/admin
 - Frontend: http://localhost:3000
 
 ---
