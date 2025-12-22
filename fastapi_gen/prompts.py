@@ -715,7 +715,10 @@ def run_interactive_prompts() -> ProjectConfig:
     # Admin panel configuration (when enabled and SQL database - PostgreSQL or SQLite)
     admin_environments = AdminEnvironmentType.DEV_STAGING
     admin_require_auth = True
-    if integrations.get("enable_admin_panel") and database in (DatabaseType.POSTGRESQL, DatabaseType.SQLITE):
+    if integrations.get("enable_admin_panel") and database in (
+        DatabaseType.POSTGRESQL,
+        DatabaseType.SQLITE,
+    ):
         admin_environments, admin_require_auth = prompt_admin_config()
 
     # Rate limit configuration (when rate limiting is enabled)
