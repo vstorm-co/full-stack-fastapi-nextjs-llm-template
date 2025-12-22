@@ -4,10 +4,12 @@ import pytest
 from pydantic import ValidationError
 
 from fastapi_gen.config import (
+    AIFrameworkType,
     AuthType,
     BackgroundTaskType,
     CIType,
     DatabaseType,
+    LLMProviderType,
     LogfireFeatures,
     ProjectConfig,
 )
@@ -464,3 +466,25 @@ class TestOptionCombinationValidation:
             enable_conversation_persistence=True,
         )
         assert config.enable_conversation_persistence is True
+
+    def test_openrouter_with_langchain_raises_validation_error(self) -> None:
+        """Test that OpenRouter + LangChain combination is rejected."""
+        with pytest.raises(ValidationError) as exc_info:
+            ProjectConfig(
+                project_name="test",
+                enable_ai_agent=True,
+                llm_provider=LLMProviderType.OPENROUTER,
+                ai_framework=AIFrameworkType.LANGCHAIN,
+            )
+        assert "OpenRouter is not supported with LangChain" in str(exc_info.value)
+
+    def test_openrouter_with_pydanticai_is_valid(self) -> None:
+        """Test that OpenRouter + PydanticAI combination is accepted."""
+        config = ProjectConfig(
+            project_name="test",
+            enable_ai_agent=True,
+            llm_provider=LLMProviderType.OPENROUTER,
+            ai_framework=AIFrameworkType.PYDANTIC_AI,
+        )
+        assert config.llm_provider == LLMProviderType.OPENROUTER
+        assert config.ai_framework == AIFrameworkType.PYDANTIC_AI
