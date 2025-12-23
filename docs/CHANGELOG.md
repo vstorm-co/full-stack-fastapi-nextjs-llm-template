@@ -5,6 +5,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.7] - 2025-12-23
+
+### Added
+
+#### Docker & Production
+
+- **Optional Traefik reverse proxy** with three configuration modes:
+  - `traefik_included`: Full Traefik setup in docker-compose.prod.yml (default)
+  - `traefik_external`: Traefik labels only, for shared Traefik instances
+  - `none`: No reverse proxy, ports exposed directly
+- **`.env.prod.example` template** for production secrets management:
+  - Conditional sections for PostgreSQL, Redis, JWT, Traefik, Flower
+  - Required variable validation using `${VAR:?error}` syntax
+  - Setup instructions in docker-compose.prod.yml header
+- **Unique Traefik router names** using `project_slug` prefix for multi-tenant support:
+  - `{project_slug}-api`, `{project_slug}-frontend`, `{project_slug}-flower`
+  - Prevents conflicts when running multiple projects on same server
+
+#### AI Agent Support
+
+- **`AGENTS.md`** file for non-Claude AI agents (Codex, Copilot, Cursor, Zed, OpenCode)
+- **Progressive disclosure documentation** in generated projects:
+  - `docs/architecture.md` - layered architecture details
+  - `docs/adding_features.md` - how to add endpoints, commands, tools
+  - `docs/testing.md` - testing guide and examples
+  - `docs/patterns.md` - DI, service, repository patterns
+- **README.md** updated with "AI-Agent Friendly" section
+
+### Changed
+
+- **Template `CLAUDE.md` refactored** from 384 to ~80 lines following [progressive disclosure best practices](https://humanlayer.dev/blog/writing-a-good-claude-md)
+- **Main project `CLAUDE.md`** updated with "Where to Find More Info" section
+- **docker-compose.prod.yml** now uses `env_file: .env.prod` instead of inline defaults
+- **Removed hardcoded credentials** (`changeme`) from docker-compose.prod.yml
+
+### Security
+
+- Production credentials no longer have insecure defaults
+- `.env.prod` added to `.gitignore` to prevent committing secrets
+- Required environment variables fail fast with descriptive error messages
+
 ## [0.1.6] - 2025-12-22
 
 ### Added
