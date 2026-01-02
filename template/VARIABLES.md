@@ -187,10 +187,11 @@ These variables are set automatically by the generator.
 | Variable | Type | Default | Description | Dependencies |
 |----------|------|---------|-------------|--------------|
 | `enable_ai_agent` | bool | `false` | Enable AI agent functionality | - |
-| `ai_framework` | enum | `"pydantic_ai"` | AI framework. Values: `pydantic_ai`, `langchain`, `langgraph` | Requires `enable_ai_agent` |
+| `ai_framework` | enum | `"pydantic_ai"` | AI framework. Values: `pydantic_ai`, `langchain`, `langgraph`, `crewai` | Requires `enable_ai_agent` |
 | `use_pydantic_ai` | bool | `true` | PydanticAI is selected | Computed from `ai_framework` |
 | `use_langchain` | bool | `false` | LangChain is selected | Computed from `ai_framework` |
 | `use_langgraph` | bool | `false` | LangGraph (ReAct agent) is selected | Computed from `ai_framework` |
+| `use_crewai` | bool | `false` | CrewAI (multi-agent crews) is selected | Computed from `ai_framework` |
 | `llm_provider` | enum | `"openai"` | LLM provider. Values: `openai`, `anthropic`, `openrouter` | Requires `enable_ai_agent` |
 | `use_openai` | bool | `true` | OpenAI is selected | Computed from `llm_provider` |
 | `use_anthropic` | bool | `false` | Anthropic is selected | Computed from `llm_provider` |
@@ -200,7 +201,8 @@ These variables are set automatically by the generator.
 **Notes:**
 - PydanticAI uses `iter()` for full event streaming over WebSocket
 - LangGraph implements a ReAct (Reasoning + Acting) agent pattern with graph-based architecture
-- OpenRouter with LangChain or LangGraph is not supported
+- CrewAI enables multi-agent teams that collaborate on complex tasks
+- OpenRouter with LangChain, LangGraph, or CrewAI is not supported
 
 ---
 

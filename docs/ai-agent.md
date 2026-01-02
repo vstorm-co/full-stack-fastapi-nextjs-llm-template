@@ -1,10 +1,31 @@
 # AI Agent Documentation
 
-This document describes the PydanticAI agent integration.
+This document describes the AI agent integrations available in the template.
 
 ## Overview
 
-The template includes an AI agent powered by [PydanticAI](https://ai.pydantic.dev), providing:
+The template supports multiple AI frameworks for building intelligent agents:
+
+| Framework | Description | Best For |
+|-----------|-------------|----------|
+| **PydanticAI** | Type-safe AI with Pydantic integration | Simple agents, type safety |
+| **LangChain** | Comprehensive AI tooling ecosystem | Complex chains, many integrations |
+| **LangGraph** | Graph-based ReAct agents | Multi-step reasoning, tool loops |
+| **CrewAI** | Multi-agent orchestration | Agent teams, complex workflows |
+
+Select your framework during project creation:
+```bash
+fastapi-fullstack create my_project --ai-framework pydanticai  # default
+fastapi-fullstack create my_project --ai-framework langchain
+fastapi-fullstack create my_project --ai-framework langgraph
+fastapi-fullstack create my_project --ai-framework crewai
+```
+
+---
+
+## PydanticAI Agent
+
+The default agent is powered by [PydanticAI](https://ai.pydantic.dev), providing:
 
 - Type-safe AI interactions
 - Tool/function calling support
@@ -616,3 +637,222 @@ interface Message {
 **"Tool not found"**
 - Verify the tool is registered in `_register_tools()`
 - Check the tool's docstring is descriptive enough
+
+---
+
+## CrewAI Multi-Agent Framework
+
+[CrewAI](https://crewai.com) enables multi-agent orchestration where specialized agents collaborate on complex tasks.
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      WebSocket Client                        │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    WebSocket Endpoint                        │
+│                  /api/v1/agent/ws                           │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    CrewAIAssistant                           │
+│              Multi-Agent Crew Orchestrator                   │
+│         Agents, Tasks, Process (sequential/hierarchical)    │
+└─────────────────────────────────────────────────────────────┘
+                              │
+              ┌───────────────┼───────────────┐
+              ▼               ▼               ▼
+        ┌─────────┐     ┌─────────┐     ┌─────────┐
+        │ Agent 1 │     │ Agent 2 │     │ Agent N │
+        │Researcher│    │ Writer  │     │   ...   │
+        └─────────┘     └─────────┘     └─────────┘
+```
+
+### Configuration
+
+```python
+# app/agents/crewai_assistant.py
+from pydantic import BaseModel
+
+class AgentConfig(BaseModel):
+    role: str           # Agent's role (e.g., "Research Analyst")
+    goal: str           # What the agent aims to achieve
+    backstory: str      # Agent's background/personality
+    tools: list[str] = []
+    allow_delegation: bool = True
+    verbose: bool = True
+
+class TaskConfig(BaseModel):
+    description: str    # Task description
+    expected_output: str
+    agent_role: str     # Which agent handles this task
+    context_from: list[str] = []  # Dependencies on other tasks
+
+class CrewConfig(BaseModel):
+    name: str = "default_crew"
+    process: str = "sequential"  # or "hierarchical"
+    memory: bool = True
+    max_rpm: int = 10
+    agents: list[AgentConfig] = []
+    tasks: list[TaskConfig] = []
+```
+
+### Event Streaming
+
+CrewAI streams real-time events via WebSocket:
+
+| Event Type | Description |
+|------------|-------------|
+| `crew_started` | Crew execution begins |
+| `crew_complete` | Final result ready |
+| `agent_started` | Agent begins working on task |
+| `agent_completed` | Agent finishes task |
+| `task_started` | Task execution begins |
+| `task_completed` | Task result available |
+| `tool_started` | Tool is being called |
+| `tool_finished` | Tool returns result |
+| `llm_started` | LLM request begins |
+| `llm_completed` | LLM response received |
+| `error` | Error occurred |
+
+### Example Usage
+
+```python
+# Create a research crew
+crew = CrewAIAssistant(config=CrewConfig(
+    name="research_crew",
+    process="sequential",
+    agents=[
+        AgentConfig(
+            role="Research Analyst",
+            goal="Find accurate information",
+            backstory="Expert researcher with attention to detail",
+        ),
+        AgentConfig(
+            role="Content Writer",
+            goal="Create clear, engaging content",
+            backstory="Skilled writer who simplifies complex topics",
+        ),
+    ],
+    tasks=[
+        TaskConfig(
+            description="Research the topic: {user_prompt}",
+            expected_output="Comprehensive research summary",
+            agent_role="Research Analyst",
+        ),
+        TaskConfig(
+            description="Write an article based on the research",
+            expected_output="Well-structured article",
+            agent_role="Content Writer",
+            context_from=["Research Analyst"],
+        ),
+    ],
+))
+
+# Stream events
+async for event in crew.stream("Explain quantum computing"):
+    print(event)
+```
+
+---
+
+## LangGraph ReAct Agent
+
+[LangGraph](https://langchain-ai.github.io/langgraph/) provides graph-based agent orchestration with the ReAct pattern.
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      WebSocket Client                        │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    WebSocket Endpoint                        │
+│                  /api/v1/agent/ws                           │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   LangGraphAssistant                         │
+│               Graph-based ReAct Agent                        │
+│         Agent Node ←→ Tools Node (conditional loop)         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### ReAct Pattern
+
+The agent follows the Reasoning + Acting pattern:
+
+1. **Reason** - Analyze the input and decide on action
+2. **Act** - Execute tools if needed
+3. **Observe** - Process tool results
+4. **Repeat** - Continue until task is complete
+
+### Configuration
+
+```python
+# app/agents/langgraph_assistant.py
+from langgraph.graph import StateGraph, MessagesState
+
+class LangGraphAssistant:
+    def __init__(self, model_name: str = "gpt-4o-mini"):
+        self.model = ChatOpenAI(model=model_name)
+        self.tools = [get_current_datetime]
+        self.graph = self._build_graph()
+
+    def _build_graph(self) -> StateGraph:
+        graph = StateGraph(MessagesState)
+        graph.add_node("agent", self._agent_node)
+        graph.add_node("tools", self._tools_node)
+        graph.add_conditional_edges(
+            "agent",
+            self._should_continue,
+            {"continue": "tools", "end": END}
+        )
+        graph.add_edge("tools", "agent")
+        graph.set_entry_point("agent")
+        return graph.compile(checkpointer=MemorySaver())
+```
+
+### Streaming Modes
+
+LangGraph supports two streaming modes:
+
+```python
+# Token streaming (for LLM output)
+async for event in assistant.stream(prompt, mode="messages"):
+    if event["type"] == "token":
+        print(event["content"], end="")
+
+# State updates (for tool calls)
+async for event in assistant.stream(prompt, mode="updates"):
+    if event["type"] == "tool_call":
+        print(f"Calling: {event['tool_name']}")
+```
+
+---
+
+## Framework Comparison
+
+| Feature | PydanticAI | LangChain | LangGraph | CrewAI |
+|---------|------------|-----------|-----------|--------|
+| Type Safety | ✅ Native | ⚠️ Manual | ⚠️ Manual | ⚠️ Manual |
+| Multi-Agent | ❌ | ⚠️ Complex | ⚠️ Complex | ✅ Native |
+| Tool Calling | ✅ | ✅ | ✅ | ✅ |
+| Streaming | ✅ iter() | ✅ astream | ✅ astream | ✅ Events |
+| Memory | ✅ Built-in | ✅ Chains | ✅ Checkpointer | ✅ Built-in |
+| Complexity | Low | Medium | Medium | High |
+| Dependencies | Few | Many | Medium | Many |
+
+### When to Use Each
+
+- **PydanticAI**: Simple assistants, chatbots, type-safe applications
+- **LangChain**: Complex chains, many third-party integrations needed
+- **LangGraph**: Multi-step reasoning, tool loops, state machines
+- **CrewAI**: Agent teams, role-based collaboration, complex workflows

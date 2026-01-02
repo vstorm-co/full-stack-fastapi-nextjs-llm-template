@@ -310,7 +310,9 @@ def prompt_integrations() -> dict[str, bool]:
                 questionary.Choice("Admin Panel (SQLAdmin)", value="admin_panel"),
                 questionary.Choice("WebSockets", value="websockets"),
                 questionary.Choice("File Storage (S3/MinIO)", value="file_storage"),
-                questionary.Choice("AI Agent (PydanticAI/LangChain)", value="ai_agent"),
+                questionary.Choice(
+                    "AI Agent (PydanticAI/LangGraph/CrewAI)", value="ai_agent", checked=True
+                ),
                 questionary.Choice("Webhooks (outbound events)", value="webhooks"),
                 questionary.Choice("Example CRUD (Item model)", value="example_crud", checked=True),
                 questionary.Choice("CORS middleware", value="cors", checked=True),
@@ -485,8 +487,8 @@ def prompt_frontend() -> FrontendType:
     console.print()
 
     choices = [
-        questionary.Choice("None (API only)", value=FrontendType.NONE),
         questionary.Choice("Next.js 15 (App Router, TypeScript, Bun)", value=FrontendType.NEXTJS),
+        questionary.Choice("None (API only)", value=FrontendType.NONE),
     ]
 
     return cast(
@@ -531,6 +533,7 @@ def prompt_ai_framework() -> AIFrameworkType:
         questionary.Choice("PydanticAI (recommended)", value=AIFrameworkType.PYDANTIC_AI),
         questionary.Choice("LangChain", value=AIFrameworkType.LANGCHAIN),
         questionary.Choice("LangGraph (ReAct agent)", value=AIFrameworkType.LANGGRAPH),
+        questionary.Choice("CrewAI (multi-agent crews)", value=AIFrameworkType.CREWAI),
     ]
 
     return cast(
@@ -550,7 +553,7 @@ def prompt_llm_provider(ai_framework: AIFrameworkType) -> LLMProviderType:
 
     Args:
         ai_framework: The selected AI framework. OpenRouter is only
-            available for PydanticAI (not LangChain or LangGraph).
+            available for PydanticAI (not LangChain, LangGraph, or CrewAI).
     """
     console.print()
     console.print("[bold cyan]LLM Provider[/]")
@@ -561,7 +564,7 @@ def prompt_llm_provider(ai_framework: AIFrameworkType) -> LLMProviderType:
         questionary.Choice("Anthropic (claude-sonnet-4-5)", value=LLMProviderType.ANTHROPIC),
     ]
 
-    # OpenRouter only available for PydanticAI (not LangChain or LangGraph)
+    # OpenRouter only available for PydanticAI (not LangChain, LangGraph, or CrewAI)
     if ai_framework == AIFrameworkType.PYDANTIC_AI:
         choices.append(
             questionary.Choice("OpenRouter (multi-provider)", value=LLMProviderType.OPENROUTER)

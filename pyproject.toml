@@ -1,6 +1,6 @@
 [project]
 name = "fastapi-fullstack"
-version = "0.1.11"
+version = "0.1.12"
 description = "Full-stack FastAPI + Next.js template generator with PydanticAI/LangChain agents, WebSocket streaming, 20+ enterprise integrations, and Logfire/LangSmith observability. Ship AI apps fast. CLI tool to generate production-ready FastAPI + Next.js projects with AI agents, auth, and observability."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -149,6 +149,9 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
 addopts = "-v --tb=short"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+]
 
 [tool.coverage.run]
 source = ["fastapi_gen"]

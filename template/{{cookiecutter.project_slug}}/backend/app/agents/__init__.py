@@ -28,6 +28,16 @@ Tools are defined in the tools/ subdirectory.
 from app.agents.langgraph_assistant import AgentContext, AgentState, LangGraphAssistant
 
 __all__ = ["LangGraphAssistant", "AgentContext", "AgentState"]
+{%- elif cookiecutter.enable_ai_agent and cookiecutter.use_crewai %}
+"""AI Agents module using CrewAI.
+
+This module contains a multi-agent crew built with CrewAI.
+Agents work together in a team to accomplish complex tasks.
+"""
+
+from app.agents.crewai_assistant import CrewAIAssistant, CrewConfig, CrewContext
+
+__all__ = ["CrewAIAssistant", "CrewConfig", "CrewContext"]
 {%- else %}
 """AI Agents - not configured."""
 {%- endif %}

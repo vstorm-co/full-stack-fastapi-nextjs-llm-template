@@ -62,6 +62,7 @@
   "use_pydantic_ai": true,
   "use_langchain": false,
   "use_langgraph": false,
+  "use_crewai": false,
   "llm_provider": "openai",
   "use_openai": true,
   "use_anthropic": false,

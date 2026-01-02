@@ -58,6 +58,7 @@ class TestAssistantAgent:
         assert agent.temperature == 0.5
         assert agent.system_prompt == "Custom prompt"
 
+    @patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"})
     @patch("app.agents.assistant.OpenAIProvider")
     @patch("app.agents.assistant.OpenAIChatModel")
     def test_agent_property_creates_agent(self, mock_model, mock_provider):
@@ -67,6 +68,7 @@ class TestAssistantAgent:
         assert agent._agent is not None
         mock_model.assert_called_once()
 
+    @patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"})
     @patch("app.agents.assistant.OpenAIProvider")
     @patch("app.agents.assistant.OpenAIChatModel")
     def test_agent_property_caches_agent(self, mock_model, mock_provider):

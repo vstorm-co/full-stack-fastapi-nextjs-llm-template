@@ -11,6 +11,8 @@ export interface ChatMessage {
   timestamp: Date;
   toolCalls?: ToolCall[];
   isStreaming?: boolean;
+  /** Group ID for related messages (e.g., CrewAI agent chain) */
+  groupId?: string;
 }
 
 export interface ToolCall {
@@ -23,6 +25,7 @@ export interface ToolCall {
 
 // WebSocket event types from backend
 export type WSEventType =
+  // PydanticAI / LangChain / LangGraph events
   | "user_prompt"
   | "user_prompt_processed"
   | "model_request_start"
@@ -37,7 +40,19 @@ export type WSEventType =
   | "complete"
   | "error"
   | "conversation_created"
-  | "message_saved";
+  | "message_saved"
+  // CrewAI-specific events
+  | "crew_start"
+  | "crew_started"
+  | "crew_complete"
+  | "agent_started"
+  | "agent_completed"
+  | "task_started"
+  | "task_completed"
+  | "tool_started"
+  | "tool_finished"
+  | "llm_started"
+  | "llm_completed";
 
 export interface WSEvent {
   type: WSEventType;

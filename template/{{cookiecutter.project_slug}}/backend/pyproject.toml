@@ -133,6 +133,15 @@ dependencies = [
     "langgraph>=0.2.0",
     "langgraph-checkpoint>=2.0.0",
 {%- endif %}
+{%- if cookiecutter.enable_ai_agent and cookiecutter.use_crewai %}
+    "crewai>=1.0.0",
+{%- if cookiecutter.use_openai %}
+    "langchain-openai>=0.3.0",
+{%- endif %}
+{%- if cookiecutter.use_anthropic %}
+    "langchain-anthropic>=0.3.0",
+{%- endif %}
+{%- endif %}
 {%- if cookiecutter.logfire_httpx or cookiecutter.enable_file_storage %}
     "httpx>=0.27.0",
 {%- endif %}

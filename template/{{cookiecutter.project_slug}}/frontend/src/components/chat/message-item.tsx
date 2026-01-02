@@ -9,22 +9,40 @@ import { User, Bot } from "lucide-react";
 
 interface MessageItemProps {
   message: ChatMessage;
+  groupPosition?: "first" | "middle" | "last" | "single";
 }
 
-export function MessageItem({ message }: MessageItemProps) {
+export function MessageItem({ message, groupPosition }: MessageItemProps) {
   const isUser = message.role === "user";
+  const isGrouped = groupPosition && groupPosition !== "single";
 
   return (
     <div
       className={cn(
-        "group flex gap-2 sm:gap-4 py-3 sm:py-4",
+        "group flex gap-2 sm:gap-4 relative overflow-visible",
+        isGrouped ? "py-2 sm:py-3" : "py-3 sm:py-4",
         isUser && "flex-row-reverse"
       )}
     >
+      {/* Timeline connector line for grouped messages */}
+      {isGrouped && !isUser && (
+        <div
+          className="absolute left-[15px] sm:left-[17px] w-0.5 bg-orange-500/40"
+          style={
+            groupPosition === "first"
+              ? { top: "24px", bottom: "0" }
+              : groupPosition === "last"
+                ? { top: "0", height: "24px" }
+                : { top: "0", bottom: "0" }
+          }
+        />
+      )}
+
       <div
         className={cn(
-          "flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center",
-          isUser ? "bg-primary text-primary-foreground" : "bg-orange-500/10 text-orange-500"
+          "flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center z-10",
+          isUser ? "bg-primary text-primary-foreground" : "bg-orange-500/10 text-orange-500",
+          isGrouped && !isUser && "ring-2 ring-background"
         )}
       >
         {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4 sm:h-5 sm:w-5" />}

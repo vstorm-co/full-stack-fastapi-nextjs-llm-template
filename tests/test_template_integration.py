@@ -31,6 +31,7 @@ def generated_project_minimal(tmp_path: Path) -> Path:
         auth=AuthType.NONE,
         enable_logfire=False,
         enable_docker=False,
+        enable_ai_agent=False,
         ci_type=CIType.NONE,
     )
     return generate_project(config, tmp_path)

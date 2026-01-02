@@ -645,6 +645,17 @@ class TestOptionCombinationValidation:
             )
         assert "OpenRouter is not supported with LangGraph" in str(exc_info.value)
 
+    def test_openrouter_with_crewai_raises_validation_error(self) -> None:
+        """Test that OpenRouter + CrewAI combination is rejected."""
+        with pytest.raises(ValidationError) as exc_info:
+            ProjectConfig(
+                project_name="test",
+                enable_ai_agent=True,
+                llm_provider=LLMProviderType.OPENROUTER,
+                ai_framework=AIFrameworkType.CREWAI,
+            )
+        assert "OpenRouter is not supported with CrewAI" in str(exc_info.value)
+
     def test_openrouter_with_pydanticai_is_valid(self) -> None:
         """Test that OpenRouter + PydanticAI combination is accepted."""
         config = ProjectConfig(
@@ -655,6 +666,20 @@ class TestOptionCombinationValidation:
         )
         assert config.llm_provider == LLMProviderType.OPENROUTER
         assert config.ai_framework == AIFrameworkType.PYDANTIC_AI
+
+    def test_crewai_framework_context_flags(self) -> None:
+        """Test that CrewAI framework sets correct context flags."""
+        config = ProjectConfig(
+            project_name="test",
+            enable_ai_agent=True,
+            ai_framework=AIFrameworkType.CREWAI,
+        )
+        context = config.to_cookiecutter_context()
+
+        assert context["use_crewai"] is True
+        assert context["use_pydantic_ai"] is False
+        assert context["use_langchain"] is False
+        assert context["use_langgraph"] is False
 
 
 class TestEmailValidation:

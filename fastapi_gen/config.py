@@ -90,6 +90,7 @@ class AIFrameworkType(str, Enum):
     PYDANTIC_AI = "pydantic_ai"
     LANGCHAIN = "langchain"
     LANGGRAPH = "langgraph"
+    CREWAI = "crewai"
 
 
 class LLMProviderType(str, Enum):
@@ -178,7 +179,7 @@ class ProjectConfig(BaseModel):
     admin_require_auth: bool = True
     enable_websockets: bool = False
     enable_file_storage: bool = False
-    enable_ai_agent: bool = False
+    enable_ai_agent: bool = True
     ai_framework: AIFrameworkType = AIFrameworkType.PYDANTIC_AI
     llm_provider: LLMProviderType = LLMProviderType.OPENAI
     enable_conversation_persistence: bool = False
@@ -207,7 +208,7 @@ class ProjectConfig(BaseModel):
     python_version: str = "3.12"
 
     # Frontend
-    frontend: FrontendType = FrontendType.NONE
+    frontend: FrontendType = FrontendType.NEXTJS
     frontend_port: int = 3000
 
     # Backend
@@ -270,6 +271,12 @@ class ProjectConfig(BaseModel):
             and self.llm_provider == LLMProviderType.OPENROUTER
         ):
             raise ValueError("OpenRouter is not supported with LangGraph")
+        if (
+            self.enable_ai_agent
+            and self.ai_framework == AIFrameworkType.CREWAI
+            and self.llm_provider == LLMProviderType.OPENROUTER
+        ):
+            raise ValueError("OpenRouter is not supported with CrewAI")
         if (
             self.enable_rate_limiting
             and self.rate_limit_storage == RateLimitStorageType.REDIS
@@ -353,6 +360,7 @@ class ProjectConfig(BaseModel):
             "use_pydantic_ai": self.ai_framework == AIFrameworkType.PYDANTIC_AI,
             "use_langchain": self.ai_framework == AIFrameworkType.LANGCHAIN,
             "use_langgraph": self.ai_framework == AIFrameworkType.LANGGRAPH,
+            "use_crewai": self.ai_framework == AIFrameworkType.CREWAI,
             "llm_provider": self.llm_provider.value,
             "use_openai": self.llm_provider == LLMProviderType.OPENAI,
             "use_anthropic": self.llm_provider == LLMProviderType.ANTHROPIC,
