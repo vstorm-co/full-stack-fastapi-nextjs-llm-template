@@ -310,7 +310,9 @@ def prompt_integrations() -> dict[str, bool]:
                 questionary.Choice("Admin Panel (SQLAdmin)", value="admin_panel"),
                 questionary.Choice("WebSockets", value="websockets"),
                 questionary.Choice("File Storage (S3/MinIO)", value="file_storage"),
-                questionary.Choice("AI Agent (PydanticAI/LangGraph/CrewAI)", value="ai_agent", checked=True),
+                questionary.Choice(
+                    "AI Agent (PydanticAI/LangGraph/CrewAI)", value="ai_agent", checked=True
+                ),
                 questionary.Choice("Webhooks (outbound events)", value="webhooks"),
                 questionary.Choice("Example CRUD (Item model)", value="example_crud", checked=True),
                 questionary.Choice("CORS middleware", value="cors", checked=True),
