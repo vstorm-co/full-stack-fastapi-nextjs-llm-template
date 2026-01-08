@@ -63,7 +63,6 @@ dependencies = [
     "pyodbc>=5.0.0",
     "alembic>=1.14.0",
     "greenlet>=3.0.0",
-{%- endif %}
 {%- if cookiecutter.use_jwt %}
     "pyjwt>=2.9.0",
     "bcrypt>=4.0.0",
