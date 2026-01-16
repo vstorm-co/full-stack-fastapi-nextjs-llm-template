@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.14] - 2026-01-16
+
+### Fixed
+
+- **Dynamic version reading** - `fastapi-fullstack --version` now correctly displays the version from `pyproject.toml` using `importlib.metadata` instead of hardcoded value
+
+### Security
+
+- **CVE-2026-22701** - Updated `filelock` to 3.20.3
+- **CVE-2026-21441** - Updated `urllib3` to 2.6.3
+- **CVE-2026-22702** - Updated `virtualenv` to 20.36.1
+
 ## [0.1.13] - 2026-01-06
 
 ### Added
