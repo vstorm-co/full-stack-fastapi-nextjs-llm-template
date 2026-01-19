@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.16] - 2026-01-20
+
+### Fixed
+
+- **Logfire Celery instrumentation prompt** - Celery instrumentation option now only appears when Celery is selected as background task system (previously caused validation error when selecting the option with Taskiq/ARQ)
+
+### Changed
+
+- **Prompt order** - Background tasks prompt now appears before Logfire prompt to enable dynamic feature filtering
+
+### Tests Added
+
+- Test for Celery instrumentation option visibility based on background task selection
+
 ## [0.1.15] - 2026-01-18
 
 ### Added
@@ -52,7 +66,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **OAuth requires JWT authentication** - Added validation that OAuth providers (Google) require JWT auth to be enabled, preventing invalid configuration combinations
-- **Logfire Celery instrumentation prompt** - Celery instrumentation option now only appears when Celery is selected as background task system (previously caused validation error when selecting the option with Taskiq/ARQ)
 
 ### Changed
 
