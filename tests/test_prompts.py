@@ -377,7 +377,7 @@ class TestPromptLogfire:
         mock_confirm.ask.return_value = False
         mock_questionary.confirm.return_value = mock_confirm
 
-        enabled, features = prompt_logfire()
+        enabled, features = prompt_logfire(BackgroundTaskType.NONE)
 
         assert enabled is False
         assert isinstance(features, LogfireFeatures)
@@ -394,7 +394,7 @@ class TestPromptLogfire:
         mock_questionary.checkbox.return_value = mock_checkbox
         mock_questionary.Choice = MagicMock()
 
-        enabled, features = prompt_logfire()
+        enabled, features = prompt_logfire(BackgroundTaskType.NONE)
 
         assert enabled is True
         assert features.fastapi is True
@@ -402,6 +402,25 @@ class TestPromptLogfire:
         assert features.redis is True
         assert features.celery is False
         assert features.httpx is True
+
+    @patch("fastapi_gen.prompts.questionary")
+    def test_celery_option_shown_only_for_celery(self, mock_questionary: MagicMock) -> None:
+        """Test Celery instrumentation option is only shown when Celery is selected."""
+        mock_confirm = MagicMock()
+        mock_confirm.ask.return_value = True
+        mock_questionary.confirm.return_value = mock_confirm
+
+        mock_checkbox = MagicMock()
+        mock_checkbox.ask.return_value = ["fastapi", "celery"]
+        mock_questionary.checkbox.return_value = mock_checkbox
+        mock_questionary.Choice = MagicMock()
+
+        enabled, features = prompt_logfire(BackgroundTaskType.CELERY)
+
+        assert enabled is True
+        assert features.celery is True
+        # Verify Choice was called 5 times (4 default + celery)
+        assert mock_questionary.Choice.call_count == 5
 
 
 class TestPromptBackgroundTasks:

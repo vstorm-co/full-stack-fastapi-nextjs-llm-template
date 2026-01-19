@@ -52,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **OAuth requires JWT authentication** - Added validation that OAuth providers (Google) require JWT auth to be enabled, preventing invalid configuration combinations
+- **Logfire Celery instrumentation prompt** - Celery instrumentation option now only appears when Celery is selected as background task system (previously caused validation error when selecting the option with Taskiq/ARQ)
 
 ### Changed
 
