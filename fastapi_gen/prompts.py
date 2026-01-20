@@ -226,8 +226,12 @@ def prompt_oauth() -> OAuthProvider:
     )
 
 
-def prompt_logfire() -> tuple[bool, LogfireFeatures]:
-    """Prompt for Logfire configuration."""
+def prompt_logfire(background_tasks: BackgroundTaskType) -> tuple[bool, LogfireFeatures]:
+    """Prompt for Logfire configuration.
+
+    Args:
+        background_tasks: Selected background task system (affects which options are shown).
+    """
     console.print()
     console.print("[bold cyan]Observability (Logfire)[/]")
     console.print()
@@ -242,16 +246,23 @@ def prompt_logfire() -> tuple[bool, LogfireFeatures]:
     if not enable_logfire:
         return False, LogfireFeatures()
 
+    # Build choices dynamically - only show Celery option when Celery is selected
+    choices = [
+        questionary.Choice("FastAPI instrumentation", value="fastapi", checked=True),
+        questionary.Choice("Database instrumentation", value="database", checked=True),
+        questionary.Choice("Redis instrumentation", value="redis", checked=False),
+        questionary.Choice("HTTPX instrumentation", value="httpx", checked=False),
+    ]
+
+    if background_tasks == BackgroundTaskType.CELERY:
+        choices.insert(
+            3, questionary.Choice("Celery instrumentation", value="celery", checked=False)
+        )
+
     features = _check_cancelled(
         questionary.checkbox(
             "Logfire features:",
-            choices=[
-                questionary.Choice("FastAPI instrumentation", value="fastapi", checked=True),
-                questionary.Choice("Database instrumentation", value="database", checked=True),
-                questionary.Choice("Redis instrumentation", value="redis", checked=False),
-                questionary.Choice("Celery/Taskiq instrumentation", value="celery", checked=False),
-                questionary.Choice("HTTPX instrumentation", value="httpx", checked=False),
-            ],
+            choices=choices,
         ).ask()
     )
 
@@ -834,11 +845,11 @@ def run_interactive_prompts() -> ProjectConfig:
                 ).ask()
             )
 
-    # Logfire
-    enable_logfire, logfire_features = prompt_logfire()
-
-    # Background tasks
+    # Background tasks (before Logfire so we can conditionally show Celery instrumentation)
     background_tasks = prompt_background_tasks()
+
+    # Logfire
+    enable_logfire, logfire_features = prompt_logfire(background_tasks)
 
     # Integrations (pass context for dynamic option filtering)
     integrations = prompt_integrations(database=database, orm_type=orm_type)
