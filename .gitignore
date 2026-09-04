@@ -219,5 +219,9 @@ website/node_modules/
 website/dist/
 website/.astro/
 
+# Frontend build output and installed dependencies
+frontend/.next/
+frontend/node_modules/
+
 # Custom
 .playground/
